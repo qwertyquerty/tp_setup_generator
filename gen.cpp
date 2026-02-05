@@ -5,14 +5,14 @@
 #include "moves.h"
 
 const Link initial_link = {
-    0.0f, -13142.1885, 0, 0.0f
+    0.0f, -3390.98608, 0, 0.0f
 };
 
-const f32 min_z = -12977.2734f-0.0025f;
-const f32 max_z = -12977.2734f+0.0025f;
+const f32 min_z = -3369.531f;
+const f32 max_z = -3369.5255f;
 
-const f32 z_limit_min = -13142.1885;
-const f32 z_limit_max = -12310.208;
+const f32 z_limit_min = -3390.98608;
+const f32 z_limit_max = 10000;
 
 const uint8_t max_depth = 5;
 
