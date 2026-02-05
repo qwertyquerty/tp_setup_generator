@@ -22,14 +22,14 @@ struct Move {
     float z_speed[80];
     uint8_t length;
 
-    bool execute(Link& link, f32 z_limit_min) const {
+    bool execute(Link& link, f32 z_limit_min, f32 z_limit_max) const {
         for (uint8_t i = 0; i < length; i++) {
             link.x += x_trans[i];
             link.z += z_trans[i];
             link.x += x_speed[i];
             link.z += z_speed[i];
 
-            if (link.z < z_limit_min) {
+            if (link.z < z_limit_min || link.z > z_limit_max) {
                 return false;
             }
         }
