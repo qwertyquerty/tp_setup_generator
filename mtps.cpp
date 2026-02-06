@@ -21,6 +21,7 @@ uint8_t max_depth;
 uint8_t max_cost;
 const char* output_filename;
 std::ofstream output_file;
+bool turn_disabled = false;
 
 const char* get_movename(int move) {
     return move == TURN_MOVE_ID ? "TURN" : moves[move].name;
@@ -62,7 +63,7 @@ void recurse(Link link, uint8_t depth) {
         }
     }
 
-    if (depth == 0 || link.moves[depth-1] != TURN_MOVE_ID) {
+    if (!turn_disabled && (depth == 0 || link.moves[depth-1] != TURN_MOVE_ID)) {
         Link linkcopy = link;
         linkcopy.orientation *= -1;
         linkcopy.moves[depth] = TURN_MOVE_ID;
@@ -131,6 +132,9 @@ int main() {
                 if (strcmp(moves[i].name, movename.c_str()) == 0) {
                     printf("Disabling %s\n", movename.c_str());
                     moves[i].enabled = false;
+                }
+                if (strcmp("TURN", movename.c_str()) == 0) {
+                    turn_disabled = true;
                 }
             }
         }
