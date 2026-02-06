@@ -5,19 +5,19 @@
 #include "moves.h"
 
 const Link initial_link = {
-    0.0f, -3390.98608, 0, 0.0f
+    0.0f, -13015.9883, 0, 0.0f
 };
 
 uint64_t nodes = 0;
 
-const f32 min_z = -3369.531;
-const f32 max_z = -3369.5255;
+const f32 min_z = -12977.2734-0.0025f; 
+const f32 max_z = -12977.2734+0.0025f;
 
-const f32 z_limit_min = -3390.98608;
-const f32 z_limit_max = 10000;
+const f32 z_limit_min = -13015.9883;
+const f32 z_limit_max = -10000;
 
 const uint8_t max_depth = 7;
-const uint8_t max_cost = 11;
+const uint8_t max_cost = 10;
 
 void recurse(Link link, uint8_t depth) {
     nodes++;
