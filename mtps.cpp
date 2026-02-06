@@ -145,5 +145,9 @@ int main() {
 
     recurse(initial_link, 0);
 
+    std::cout << std::endl << "Search complete! Made with <3 by Maddie" << std::endl;
+
+    system("pause");
+
     return 0;
 }
