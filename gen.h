@@ -11,6 +11,7 @@ struct Link {
     f32 speedF = 0;
     uint8_t moves[20];
     f32 zs[20];
+    uint16_t time = 0;
 };
 
 
@@ -33,6 +34,7 @@ struct Move {
                 return false;
             }
         }
+        link.time += length;
         return true;
     }
 };
