@@ -34,4 +34,7 @@ cost_max=10
 
 # name of the output file to store the generated setups
 output_filename=tp_setups.txt
+
+# comma separated list of move names, no spaces, like NEUTRAL_SLASH,IB_NEUTRAL_SLASH
+disabled_moves=PLACE_BOMB_DAMAGE,PLACE_BOMB_SHIELD
 ```

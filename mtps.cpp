@@ -3,35 +3,40 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <sstream>
 
-#include "gen.h"
+#include "mtps.h"
 #include "moves.h"
 #include "SimpleIni.h"
 
 #define TURN_MOVE_ID 0xFF
 
 uint64_t nodes;
-f32 min_z;
-f32 max_z;
-f32 z_limit_min;
-f32 z_limit_max;
+float min_z;
+float max_z;
+float z_limit_min;
+float z_limit_max;
 uint8_t max_depth;
 uint8_t max_cost;
 const char* output_filename;
 std::ofstream output_file;
 
+const char* get_movename(int move) {
+    return move == TURN_MOVE_ID ? "turn" : moves[move].name;
+}
+
 void recurse(Link link, uint8_t depth) {
     nodes++;
 
     if (link.z >= min_z && link.z <= max_z) {
-        std::cout << "pos_fin: "<<link.z<<"\tside_fin: "<<link.x<<"\tnodes: "<<nodes<<"\tdepth: "<<(int)depth<<"\tcost: "<<link.cost<<"\tmoves:";
+        std::cout << "zf: "<<link.z<<"\txf: "<<link.x<<"\tnodes: "<<nodes<<"\tdepth: "<<(int)depth<<"\tcost: "<<link.cost<<"\tmoves:";
         for (uint8_t i = 0; i < depth; i++) {
-            std::cout << " " << moves[link.moves[i]].name << "(" << link.zs[i] << ")";
+            std::cout << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
         }
 
-        output_file << "pos_fin: "<<link.z<<"\tside_fin: "<<link.x<<"\tnodes: "<<nodes<<"\tdepth: "<<(int)depth<<"\tcost: "<<link.cost<<"\tmoves:";
+        output_file << "zf: "<<link.z<<"\txf: "<<link.x<<"\tnodes: "<<nodes<<"\tdepth: "<<(int)depth<<"\tcost: "<<link.cost<<"\tmoves:";
         for (uint8_t i = 0; i < depth; i++) {
-            output_file << " " << moves[link.moves[i]].name << "(" << link.zs[i] << ")";
+            output_file << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
         }
 
         std::cout << std::endl << std::endl;
@@ -56,8 +61,10 @@ void recurse(Link link, uint8_t depth) {
         }
     }
 
-    if (link.moves[depth]) {
+    if (link.moves[depth] != TURN_MOVE_ID) {
         Link linkcopy = link;
+        link.orientation *= -1;
+        recurse(linkcopy, depth+1);
     }
 }
 
@@ -67,7 +74,7 @@ int main() {
 	SI_Error rc = ini.LoadFile("config.ini");
 
 	if (rc < 0) {
-        std::cout << "Could not find config.ini in the same folder as mtps.exe!";
+        std::cout << "Could not find config.ini in the same folder as mtps.exe!" << std::endl;
         system("pause");
         return 1;
     }
@@ -85,13 +92,13 @@ int main() {
         pv = ini.GetValue("config", "link_orientation", "1");
         initial_link.orientation = std::stoi(pv);
 
-        uint64_t nodes = 0;
+        nodes = 0;
 
         pv = ini.GetValue("config", "goal_min", "0.0");
         min_z = std::stof(pv);
 
         pv = ini.GetValue("config", "goal_max", "0.0");
-        min_z = std::stof(pv);
+        max_z = std::stof(pv);
 
         pv = ini.GetValue("config", "collision_limit_min", "0.0");
         z_limit_min = std::stof(pv);
@@ -107,6 +114,21 @@ int main() {
 
         output_filename = ini.GetValue("config", "output_filename", "tp_setups.txt");
         output_file = std::ofstream(output_filename);
+
+        pv = ini.GetValue("config", "disabled_moves", "");
+        std::stringstream dmss;
+        dmss << pv;
+
+        while(dmss.good()) {
+            std::string movename;
+            std::getline(dmss, movename, ',');
+            for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
+                if (strcmp(moves[i].name, movename.c_str()) == 0) {
+                    printf("Disabling %s\n", movename.c_str());
+                    moves[i].enabled = false;
+                }
+            }
+        }
     }
     catch (...) {
         std::cout << "Failed to parse config.ini" << std::endl;

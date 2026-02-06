@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gen.h"
+#include "mtps.h"
 
 Move moves[] = {
 {"CLAWSHOT_C_UP_CANCEL", {0.0}, {0.0}, {-0.002882727}, {0.3132047}, 1, 1},
