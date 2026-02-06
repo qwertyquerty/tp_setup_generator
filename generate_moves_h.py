@@ -6,7 +6,7 @@ trans_re = re.compile("^.*trans: x:(.*) z:(.*)$")
 speedF_re = re.compile("^.*speedF: x:(.*) z:(.*)$")
 movefile_re = re.compile("^(.*)\[([0-9]+)\]$")
 
-h_lines = ["#pragma once\n\n", "#include \"gen.h\"\n\n", "Move moves[] = {\n",]
+h_lines = ["#pragma once\n\n", "#include \"mtps.h\"\n\n", "Move moves[] = {\n",]
 
 MOVES_DIR = "moves"
 

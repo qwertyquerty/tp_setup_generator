@@ -52,7 +52,7 @@ void recurse(Link link, uint8_t depth) {
 
     for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
         Link linkcopy = link;
-        if ((link.cost + moves[i].cost) <= max_cost) {
+        if (moves[i].enabled && (link.cost + moves[i].cost) <= max_cost) {
             bool success = moves[i].execute(linkcopy, z_limit_min, z_limit_max);
             if (success) {
                 linkcopy.zs[depth] = linkcopy.z;
