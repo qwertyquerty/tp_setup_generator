@@ -4,6 +4,7 @@ import numpy as np
 
 trans_re = re.compile("^.*trans: x:(.*) z:(.*)$")
 speedF_re = re.compile("^.*speedF: x:(.*) z:(.*)$")
+movefile_re = re.compile("^(.*)\[([0-9]+)\]$")
 
 h_lines = ["#pragma once\n\n", "#include \"gen.h\"\n\n", "Move moves[] = {\n",]
 
@@ -18,7 +19,17 @@ def zipped_sum(a, b):
 
     return t
 
+movelines = []
+
 for movefile in os.listdir(MOVES_DIR):
+    m = movefile_re.match(movefile)
+
+    if not m:
+        raise "invalid move file: " + movefile
+    
+    name = m.group(1)
+    cost = int(m.group(2))
+
     with open(os.path.join(MOVES_DIR, movefile), "r") as f:
         lines = f.readlines()
 
@@ -46,9 +57,12 @@ for movefile in os.listdir(MOVES_DIR):
                     x_trans = np.append(x_trans, np.float32(0))
                     z_trans = np.append(z_trans, np.float32(0))
 
-    print("\nMOVE:", movefile, "\nX_TRANS:", *x_trans, "\nX_SPEED:", *x_speed, "\nZ_TRANS:", *z_trans, "\nZ_SPEED:", *z_speed, "\nNAIVE SUM:", zipped_sum(x_trans, x_speed), zipped_sum(z_trans, z_speed))
+    print("\nMOVE:", name, "\nCOST:", cost, "\nX_TRANS:", *x_trans, "\nX_SPEED:", *x_speed, "\nZ_TRANS:", *z_trans, "\nZ_SPEED:", *z_speed, "\nNAIVE SUM:", zipped_sum(x_trans, x_speed), zipped_sum(z_trans, z_speed))
 
-    h_lines.append(f"{{\"{movefile}\", {{{', '.join([str(x) for x in x_trans])}}}, {{{', '.join([str(z) for z in z_trans])}}}, {{{', '.join([str(x) for x in x_speed])}}}, {{{', '.join([str(z) for z in z_speed])}}}, {len(z_speed)}}},\n")
+    movelines.append((cost, f"{{\"{name}\", {{{', '.join([str(x) for x in x_trans])}}}, {{{', '.join([str(z) for z in z_trans])}}}, {{{', '.join([str(x) for x in x_speed])}}}, {{{', '.join([str(z) for z in z_speed])}}}, {len(z_speed)}, {cost}}},\n"))
+
+
+h_lines.extend([ml[1] for ml in sorted(movelines, key=lambda ml: ml[0])]) # sort moves by cost
 
 h_lines.append("};\n")
 

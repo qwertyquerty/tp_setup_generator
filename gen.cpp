@@ -8,22 +8,26 @@ const Link initial_link = {
     0.0f, -3390.98608, 0, 0.0f
 };
 
+uint64_t nodes = 0;
+
 const f32 min_z = -3369.531;
 const f32 max_z = -3369.5255;
 
 const f32 z_limit_min = -3390.98608;
 const f32 z_limit_max = 10000;
 
-const uint8_t max_depth = 10;
-const uint8_t max_time = 100;
+const uint8_t max_depth = 7;
+const uint8_t max_cost = 11;
 
 void recurse(Link link, uint8_t depth) {
+    nodes++;
+
     if (link.z >= min_z && link.z <= max_z) {
-        printf("SOLUTION x: %f z: %f d: %d t: %d m: ", link.x, link.z, depth, link.time);
+        printf("xfin: %f\tzfin: %f\t node: %llu\tdepth: %d\tcost: %d\tmoves: ", link.x, link.z, nodes, depth, link.cost);
         for (uint8_t i = 0; i < depth; i++) {
-            printf("%s %f ", moves[link.moves[i]].name, link.zs[i]);
+            printf("%s(%f), ", moves[link.moves[i]].name, link.zs[i]);
         }
-        printf("\n");
+        printf("\n\n");
         return;
     }
 
@@ -33,7 +37,7 @@ void recurse(Link link, uint8_t depth) {
 
     for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
         Link linkcopy = link;
-        if ((link.time + moves[i].length) <= max_time) {
+        if ((link.cost + moves[i].cost) <= max_cost) {
             bool success = moves[i].execute(linkcopy, z_limit_min, z_limit_max);
             if (success) {
                 linkcopy.zs[depth] = linkcopy.z;

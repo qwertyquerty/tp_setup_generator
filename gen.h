@@ -11,7 +11,7 @@ struct Link {
     f32 speedF = 0;
     uint8_t moves[20];
     f32 zs[20];
-    uint16_t time = 0;
+    uint16_t cost = 0;
 };
 
 
@@ -22,6 +22,7 @@ struct Move {
     float x_speed[80];
     float z_speed[80];
     uint8_t length;
+    uint8_t cost;
 
     bool execute(Link& link, f32 z_limit_min, f32 z_limit_max) const {
         for (uint8_t i = 0; i < length; i++) {
@@ -34,7 +35,7 @@ struct Move {
                 return false;
             }
         }
-        link.time += length;
+        link.cost += cost;
         return true;
     }
 };
