@@ -1,3 +1,12 @@
+# Madeline's TP Setup Generator
+
+## How to use
+
+Run the exe in the same folder as a config.ini file
+
+## Example config.ini
+
+```
 [config]
 # links starting position along the axis he is facing
 link_pos=-13015.9883
@@ -25,4 +34,4 @@ cost_max=10
 
 # name of the output file to store the generated setups
 output_filename=tp_setups.txt
-
+```

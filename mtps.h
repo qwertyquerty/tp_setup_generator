@@ -22,6 +22,7 @@ struct Move {
     float z_speed[80];
     uint8_t length;
     uint8_t cost;
+    bool enabled = true;
 
     bool execute(Link& link, f32 z_limit_min, f32 z_limit_max) const {
         for (uint8_t i = 0; i < length; i++) {
