@@ -141,7 +141,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "Generating setups..." << std::endl;
+    std::cout << std::endl "Generating setups..." << std::endl << std::endl;
 
     recurse(initial_link, 0);
 
