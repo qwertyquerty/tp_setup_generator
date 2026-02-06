@@ -27,10 +27,10 @@ collision_limit_min=-13015.9883
 collision_limit_max=-10000
 
 # maximum number of actions to consider in a setup, recommended to be no more than 9 or your search will be very long
-max_depth=6
+max_depth=5
 
 # maximum cost of the setup, based on weighted cost of specific actions, recommended to be no more than 2 times your max depth and should be no less than your max depth
-cost_max=10
+cost_max=9
 
 # name of the output file to store the generated setups
 output_filename=tp_setups.txt

@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 #include "mtps.h"
 #include "moves.h"
@@ -29,12 +30,12 @@ void recurse(Link link, uint8_t depth) {
     nodes++;
 
     if (link.z >= min_z && link.z <= max_z) {
-        std::cout << "zf: "<<link.z<<"\txf: "<<link.x<<"\tnodes: "<<nodes<<"\tdepth: "<<(int)depth<<"\tcost: "<<link.cost<<"\tmoves:";
+        std::cout << "[zf: "<<link.z<<"\txf: "<<link.x<<"\tn: "<<nodes<<"\tc: "<<(int)link.cost<<"\td: "<<(int)depth<<"]\t";
         for (uint8_t i = 0; i < depth; i++) {
             std::cout << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
         }
 
-        output_file << "zf: "<<link.z<<"\txf: "<<link.x<<"\tnodes: "<<nodes<<"\tdepth: "<<(int)depth<<"\tcost: "<<link.cost<<"\tmoves:";
+        output_file << "[zf: "<<link.z<<"\txf: "<<link.x<<"\tn "<<nodes<<"\tc: "<<(int)link.cost<<"\td: "<<(int)depth<<"]\t";
         for (uint8_t i = 0; i < depth; i++) {
             output_file << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
         }
@@ -61,9 +62,11 @@ void recurse(Link link, uint8_t depth) {
         }
     }
 
-    if (link.moves[depth] != TURN_MOVE_ID) {
+    if (depth == 0 || link.moves[depth-1] != TURN_MOVE_ID) {
         Link linkcopy = link;
-        link.orientation *= -1;
+        linkcopy.orientation *= -1;
+        linkcopy.moves[depth] = TURN_MOVE_ID;
+        linkcopy.zs[depth] = linkcopy.z;
         recurse(linkcopy, depth+1);
     }
 }
@@ -80,6 +83,8 @@ int main() {
     }
 
     Link initial_link;
+
+    std::cout << std::setprecision(7) << std::fixed;
 
     try {
         const char* pv;
