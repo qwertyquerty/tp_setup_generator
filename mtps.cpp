@@ -22,7 +22,7 @@ const char* output_filename;
 std::ofstream output_file;
 
 const char* get_movename(int move) {
-    return move == TURN_MOVE_ID ? "turn" : moves[move].name;
+    return move == TURN_MOVE_ID ? "TURN" : moves[move].name;
 }
 
 void recurse(Link link, uint8_t depth) {
