@@ -4,10 +4,14 @@ LDFLAGS  := -static-libstdc++ -static-libgcc
 
 TARGET := mtps.exe
 SRC    := mtps.cpp
+PYTHON   := py
 
 all: $(TARGET)
 
-$(TARGET): $(SRC)
+gen_moves: generate_moves_h.py
+	$(PYTHON) generate_moves_h.py
+
+$(TARGET): gen_moves $(SRC)
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET) $(LDFLAGS)
 
 clean:
