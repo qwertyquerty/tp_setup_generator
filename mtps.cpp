@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <regex>
 
 #include "mtps.h"
 #include "moves.h"
@@ -133,8 +134,8 @@ int main() {
             std::string movename;
             std::getline(dmss, movename, ',');
             for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
-                if (strcmp(moves[i].name, movename.c_str()) == 0) {
-                    printf("Disabling %s\n", movename.c_str());
+                if (std::regex_match(moves[i].name, std::regex(movename))) {
+                    printf("Disabling %s\n", moves[i].name);
                     moves[i].enabled = false;
                 }
                 if (strcmp("TURN", movename.c_str()) == 0) {
