@@ -11,7 +11,7 @@
 #include "moves.h"
 #include "SimpleIni.h"
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 #define TURN_MOVE_ID 0xFF
 
