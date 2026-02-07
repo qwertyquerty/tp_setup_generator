@@ -10,6 +10,8 @@
 #include "moves.h"
 #include "SimpleIni.h"
 
+#define VERSION "1.2"
+
 #define TURN_MOVE_ID 0xFF
 
 uint64_t nodes;
@@ -73,6 +75,8 @@ void recurse(Link link, uint8_t depth) {
 }
 
 int main() {
+    std::cout << "Madeline's Twilight Princess Setup Tool v" << VERSION << std::endl << std::endl;
+
 	CSimpleIniA ini;
 	ini.SetUnicode();
 	SI_Error rc = ini.LoadFile("config.ini");
@@ -145,11 +149,15 @@ int main() {
         return 1;
     }
 
-    std::cout << std::endl << "Generating setups..." << std::endl << std::endl;
+    std::cout << std::endl;
+
+    system("pause");
+
+    std::cout << std::endl << "\nGenerating setups..." << std::endl << std::endl;
 
     recurse(initial_link, 0);
 
-    std::cout << std::endl << "Search complete! Made with <3 by Maddie" << std::endl;
+    std::cout << std::endl << "Search complete! Made with <3 by Maddie" << std::endl << std::endl;
 
     system("pause");
 
