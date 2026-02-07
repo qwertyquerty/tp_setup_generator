@@ -149,6 +149,8 @@ int main() {
         return 1;
     }
 
+    output_file << std::setprecision(7) << std::fixed;
+
     std::cout << std::endl;
 
     system("pause");
