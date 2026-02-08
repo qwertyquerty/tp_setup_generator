@@ -1,6 +1,6 @@
 CXX      := g++
 CXXFLAGS := -O3 -std=c++17 -Wall
-LDFLAGS  := -static-libstdc++ -static-libgcc
+LDFLAGS  := -static-libstdc++ -static-libgcc -lstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive -static
 
 TARGET := mtps.exe
 SRC    := mtps.cpp
