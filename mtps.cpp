@@ -11,7 +11,7 @@
 #include "moves.h"
 #include "SimpleIni.h"
 
-#define VERSION "1.5"
+#define VERSION "1.6"
 
 #define TURN_MOVE_ID 0xFF
 #define TURN_COST 1
