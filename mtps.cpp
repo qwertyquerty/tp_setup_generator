@@ -11,9 +11,10 @@
 #include "moves.h"
 #include "SimpleIni.h"
 
-#define VERSION "1.4"
+#define VERSION "1.5"
 
 #define TURN_MOVE_ID 0xFF
+#define TURN_COST 1
 
 uint64_t nodes;
 float min_z;
@@ -25,6 +26,8 @@ uint8_t max_cost;
 const char* output_filename;
 std::ofstream output_file;
 bool turn_disabled = false;
+int16_t lowest_depth;
+int16_t lowest_cost;
 
 const char* get_movename(int move) {
     return move == TURN_MOVE_ID ? "TURN" : moves[move].name;
@@ -42,6 +45,14 @@ void recurse(Link link, uint8_t depth) {
         output_file << "[zf: "<<link.z<<"\txf: "<<link.x<<"\tn "<<nodes<<"\tc: "<<(int)link.cost<<"\td: "<<(int)depth<<"]\t";
         for (uint8_t i = 0; i < depth; i++) {
             output_file << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
+        }
+
+        if (link.cost < lowest_cost || lowest_cost == -1) {
+            lowest_cost = link.cost;
+        }
+
+        if (depth < lowest_depth || lowest_depth == -1) {
+            lowest_depth = depth;
         }
 
         std::cout << std::endl << std::endl;
@@ -66,103 +77,141 @@ void recurse(Link link, uint8_t depth) {
         }
     }
 
-    if (!turn_disabled && (depth == 0 || link.moves[depth-1] != TURN_MOVE_ID)) {
+    if (!turn_disabled && (depth == 0 || link.moves[depth-1] != TURN_MOVE_ID) && (link.cost + TURN_COST) <= max_cost) {
         Link linkcopy = link;
         linkcopy.orientation *= -1;
         linkcopy.moves[depth] = TURN_MOVE_ID;
         linkcopy.zs[depth] = linkcopy.z;
+        linkcopy.cost += TURN_COST;
         recurse(linkcopy, depth+1);
     }
 }
 
-int main() {
-    std::cout << "Madeline's Twilight Princess Setup Tool v" << VERSION << std::endl << std::endl;
-
-	CSimpleIniA ini;
-	ini.SetUnicode();
-	SI_Error rc = ini.LoadFile("config.ini");
-
-	if (rc < 0) {
-        std::cout << "Could not find config.ini in the same folder as mtps.exe!" << std::endl;
-        system("pause");
-        return 1;
+int main(int argc, char* argv[]) {
+    if (argc > 1) {
+        if (strcmp(argv[1], "moves") == 0) {
+            for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
+                float x = 0;
+                float z = 0;
+                moves[i].estimated_offset(x, z);
+                std::cout << moves[i].name << " c: " << moves[i].cost << " z: " << z << " x: " << x << std::endl;
+            }
+        }
+        else {
+            std::cout << "Unknown command: " << argv[1] << std::endl;
+        }
     }
 
-    Link initial_link;
+    std::cout << "Madeline's Twilight Princess Setup Tool v" << VERSION << std::endl << std::endl;
 
-    std::cout << std::setprecision(7) << std::fixed;
+    while (true) {
+        std::cout << "Reading config..." << std::endl << std::endl;
+        
+        CSimpleIniA ini;
+        ini.SetUnicode();
+        SI_Error rc = ini.LoadFile("config.ini");
 
-    try {
-        const char* pv;
-        pv = ini.GetValue("config", "link_pos", "0.0");
+        if (rc < 0) {
+            std::cout << "Could not find config.ini in the same folder as mtps.exe!" << std::endl;
+            system("pause");
+            return 1;
+        }
 
-        initial_link = {
-            0.0f, std::stof(pv), 0, 0.0f
-        };
+        Link initial_link;
 
-        pv = ini.GetValue("config", "link_orientation", "1");
-        initial_link.orientation = std::stoi(pv);
+        std::cout << std::setprecision(7) << std::fixed;
 
-        nodes = 0;
+        try {
+            const char* pv;
+            pv = ini.GetValue("config", "link_pos", "0.0");
 
-        pv = ini.GetValue("config", "goal_min", "0.0");
-        min_z = std::stof(pv);
+            initial_link = {
+                0.0f, std::stof(pv), 0, 0.0f
+            };
 
-        pv = ini.GetValue("config", "goal_max", "0.0");
-        max_z = std::stof(pv);
+            pv = ini.GetValue("config", "link_orientation", "1");
+            initial_link.orientation = std::stoi(pv);
 
-        pv = ini.GetValue("config", "collision_limit_min", "0.0");
-        z_limit_min = std::stof(pv);
+            nodes = 0;
+            lowest_cost = -1;
+            lowest_depth = -1;
 
-        pv = ini.GetValue("config", "collision_limit_max", "0.0");
-        z_limit_max = std::stof(pv);
+            pv = ini.GetValue("config", "goal_min", "0.0");
+            min_z = std::stof(pv);
 
-        pv = ini.GetValue("config", "max_depth", "5");
-        max_depth = std::stoi(pv);
+            pv = ini.GetValue("config", "goal_max", "0.0");
+            max_z = std::stof(pv);
 
-        pv = ini.GetValue("config", "cost_max", "10");
-        max_cost = std::stoi(pv);
+            pv = ini.GetValue("config", "collision_limit_min", "0.0");
+            z_limit_min = std::stof(pv);
 
-        output_filename = ini.GetValue("config", "output_filename", "tp_setups.txt");
-        output_file = std::ofstream(output_filename);
+            pv = ini.GetValue("config", "collision_limit_max", "0.0");
+            z_limit_max = std::stof(pv);
 
-        pv = ini.GetValue("config", "disabled_moves", "");
-        std::stringstream dmss;
-        dmss << pv;
+            pv = ini.GetValue("config", "max_depth", "5");
+            max_depth = std::stoi(pv);
 
-        while(dmss.good()) {
-            std::string movename;
-            std::getline(dmss, movename, ',');
+            pv = ini.GetValue("config", "cost_max", "10");
+            max_cost = std::stoi(pv);
+
+            output_filename = ini.GetValue("config", "output_filename", "tp_setups.txt");
+            output_file = std::ofstream(output_filename);
+
+            pv = ini.GetValue("config", "disabled_moves", "");
+            std::stringstream dmss;
+            dmss << pv;
+
             for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
-                if (std::regex_match(moves[i].name, std::regex(movename))) {
-                    printf("Disabling %s\n", moves[i].name);
-                    moves[i].enabled = false;
-                }
-                if (strcmp("TURN", movename.c_str()) == 0) {
-                    turn_disabled = true;
+                moves[i].enabled = true;
+            }
+            turn_disabled = false;
+
+            while(dmss.good()) {
+                std::string movename;
+                std::getline(dmss, movename, ',');
+                
+                for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
+                    if (moves[i].enabled && std::regex_match(moves[i].name, std::regex(movename))) {
+                        printf("Disabling %s\n", moves[i].name);
+                        moves[i].enabled = false;
+                    }
+                    if (strcmp("TURN", movename.c_str()) == 0) {
+                        turn_disabled = true;
+                    }
                 }
             }
         }
-    }
-    catch (...) {
-        std::cout << "Failed to parse config.ini" << std::endl;
+        catch (...) {
+            std::cout << "Failed to parse config.ini" << std::endl;
+            system("pause");
+            return 1;
+        }
+
+        output_file << std::setprecision(7) << std::fixed;
+
+        std::cout << std::endl;
+
         system("pause");
-        return 1;
+
+        std::cout << std::endl << "\nGenerating setups..." << std::endl << std::endl;
+
+        recurse(initial_link, 0);
+
+        std::cout << std::endl << "Search complete! Made with <3 by Maddie" << std::endl << std::endl;
+
+        if (lowest_cost != -1) {
+            std::cout << "Lowest cost: " << lowest_cost << std::endl;
+        }
+
+        if (lowest_depth != -1) {
+            std::cout << "Lowest depth: " << lowest_depth << std::endl << std::endl;
+        }
+
+        output_file.close();
+
+        system("pause");
+        std::cout << std::endl << std::endl;
     }
-
-    output_file << std::setprecision(7) << std::fixed;
-
-    std::cout << std::endl;
-
-    system("pause");
-
-    std::cout << std::endl << "\nGenerating setups..." << std::endl << std::endl;
-
-    recurse(initial_link, 0);
-
-    std::cout << std::endl << "Search complete! Made with <3 by Maddie" << std::endl << std::endl;
-
-    system("pause");
 
     return 0;
 }

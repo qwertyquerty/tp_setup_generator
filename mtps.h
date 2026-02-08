@@ -27,7 +27,7 @@ struct Move {
             link.x += x_trans[i] * link.orientation;
             link.z += z_trans[i] * link.orientation;
             link.x += x_speed[i] * link.orientation;
-            link.z += z_speed[i]*  link.orientation;
+            link.z += z_speed[i] * link.orientation;
 
             if (link.z < z_limit_min || link.z > z_limit_max) {
                 return false;
@@ -35,5 +35,14 @@ struct Move {
         }
         link.cost += cost;
         return true;
+    }
+
+    void estimated_offset(float& x, float& z) {
+        for (uint8_t i = 0; i < length; i++) {
+            x += x_trans[i];
+            z += z_trans[i];
+            x += x_speed[i];
+            z += z_speed[i];
+        }
     }
 };

@@ -37,5 +37,5 @@ output_filename=tp_setups.txt
 
 # comma separated list of move names, no spaces, like NEUTRAL_SLASH,IB_NEUTRAL_SLASH
 # support regular expressions, for example .*_ABR will disable all abridged moves
-disabled_moves=PLACE_BOMB_DAMAGE,PLACE_BOMB_SHIELD
+disabled_moves=PLACE_BOMB_DAMAGE,PLACE_BOMB_SHIELD,CRIT_.*
 ```
