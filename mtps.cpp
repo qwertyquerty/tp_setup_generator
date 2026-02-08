@@ -89,24 +89,26 @@ void recurse(Link link, uint8_t depth) {
 
 int main(int argc, char* argv[]) {
     if (argc > 1) {
+        std::cout << std::setprecision(7) << std::fixed;
         if (strcmp(argv[1], "moves") == 0) {
             for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
                 float x = 0;
                 float z = 0;
                 moves[i].estimated_offset(x, z);
-                std::cout << moves[i].name << " c: " << moves[i].cost << " z: " << z << " x: " << x << std::endl;
+                std::cout << moves[i].name << " c: " << (int)moves[i].cost << " z: " << z << " x: " << x << std::endl;
             }
         }
         else {
             std::cout << "Unknown command: " << argv[1] << std::endl;
         }
+        return 0;
     }
 
     std::cout << "Madeline's Twilight Princess Setup Tool v" << VERSION << std::endl << std::endl;
 
     while (true) {
         std::cout << "Reading config..." << std::endl << std::endl;
-        
+
         CSimpleIniA ini;
         ini.SetUnicode();
         SI_Error rc = ini.LoadFile("config.ini");
