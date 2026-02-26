@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -39,6 +40,15 @@ std::vector<GoalRange> z_goal_ranges;
 
 const char* get_movename(int move) {
     return move == TURN_MOVE_ID ? "TURN" : moves[move].name;
+}
+
+void pause() {
+    #ifdef _WIN32
+        system("pause");
+    #else
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    #endif
 }
 
 void recurse(Link link, uint8_t depth) {
@@ -143,7 +153,7 @@ int main(int argc, char* argv[]) {
                     float z = std::stof(pos_str);
 
                     initial_links.push_back({
-                        0.0f, z, 0, 0.0f
+                        0.0f, z, 0.0f, z, 0, 0.0f
                     });
                 }
             }
@@ -220,7 +230,7 @@ int main(int argc, char* argv[]) {
         }
         catch (...) {
             std::cout << "Failed to parse config.ini" << std::endl;
-            system("pause");
+            pause();
             return 1;
         }
 
@@ -228,7 +238,7 @@ int main(int argc, char* argv[]) {
 
         std::cout << std::endl;
 
-        system("pause");
+        pause();
 
         std::cout << std::endl << "\nGenerating setups..." << std::endl << std::endl;
 
@@ -255,7 +265,7 @@ int main(int argc, char* argv[]) {
 
         output_file.close();
 
-        system("pause");
+        pause();
         std::cout << std::endl << std::endl;
     }
 
