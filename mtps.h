@@ -3,6 +3,8 @@
 #include <cstdint>
 
 struct Link {
+    float x_i = 0;
+    float z_i = 0;
     float x = 0;
     float z = 0;
     int8_t orientation = 0;

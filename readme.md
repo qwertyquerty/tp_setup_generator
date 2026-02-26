@@ -8,17 +8,17 @@ Run the exe in the same folder as a config.ini file
 
 ```
 [config]
-# links starting position along the axis he is facing
-link_pos=-13015.9883
+# links starting positions along the axis he is facing, separate each by comma
+link_pos=-13015.9883,-13015.9922
 
 # 1 if he is facing positive on that axis, -1 if he is facing negative on that axis
 link_orientation=1
 
-# minimum value of the goal positional range
-goal_min=-12977.2773
+# if true, will also simulate facing opposite of orientation specified
+try_both_orientations=false
 
-# maximum value of the goal positional range
-goal_max=-12977.2734
+# min/max values of the goal positional range - separate min and max by : and then each range by ;
+goal_ranges=-12977.2773:-12977.2734;-12917.2773:-12917.2734
 
 # lowest coordinate link can travel to during the setup before he hits a wall / falls / etc.
 collision_limit_min=-13015.9883
@@ -36,6 +36,6 @@ cost_max=9
 output_filename=tp_setups.txt
 
 # comma separated list of move names, no spaces, like NEUTRAL_SLASH,IB_NEUTRAL_SLASH
-# support regular expressions, for example .*_ABR will disable all abridged moves
-disabled_moves=PLACE_BOMB_DAMAGE,PLACE_BOMB_SHIELD,CRIT_.*
+# support regular expressions, for example .*ABR.* will disable all abridged moves
+disabled_moves=.*SHIELD_ATTACK.*,.*JUMP_STRIKE.*,.*BOMB.*
 ```
