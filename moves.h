@@ -4,6 +4,7 @@
 
 Move moves[] = {
 {"CLAWSHOT_C_UP_CANCEL", {0.0}, {0.0}, {0.0}, {0.31319073}, 1, 1},
+{"STAL_CLAW_C_UP_CANCEL", {0.0}, {0.0}, {0.0}, {0.8374}, 1, 1},
 {"CRIT_CLAWSHOT_C_UP_CANCEL", {0.0}, {0.0}, {0.0}, {0.417306}, 1, 1},
 {"CRIT_IB_CLAWSHOT_C_UP_CANCEL", {0.0}, {0.0}, {0.0}, {1.3649902}, 1, 1},
 {"CRIT_IB_RANG_C_UP_CANCEL", {0.0}, {0.0}, {0.0}, {1.3094482}, 1, 1},

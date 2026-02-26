@@ -43,12 +43,8 @@ const char* get_movename(int move) {
 }
 
 void pause() {
-    #ifdef _WIN32
-        system("pause");
-    #else
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    #endif
+    std::cout << "Press Enter to continue...";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 void recurse(Link link, uint8_t depth) {
