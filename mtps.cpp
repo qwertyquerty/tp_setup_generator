@@ -26,8 +26,16 @@ uint8_t max_cost;
 const char* output_filename;
 std::ofstream output_file;
 bool turn_disabled = false;
+bool try_both_orientations = false;
 int16_t lowest_depth;
 int16_t lowest_cost;
+
+struct GoalRange {
+    float min;
+    float max;
+};
+
+std::vector<GoalRange> z_goal_ranges;
 
 const char* get_movename(int move) {
     return move == TURN_MOVE_ID ? "TURN" : moves[move].name;
@@ -35,34 +43,35 @@ const char* get_movename(int move) {
 
 void recurse(Link link, uint8_t depth) {
     nodes++;
+    for (size_t s = 0; s < z_goal_ranges.size(); s++) {
+        if (link.z >= z_goal_ranges[s].min && link.z <= z_goal_ranges[s].max) {
+            std::cout << "[zi: " << link.z_i << " zf: "<<link.z<<"\txf: "<<link.x<<"\tn: "<<nodes<<"\tc: "<<(int)link.cost<<"\td: "<<(int)depth<<"]\t";
+            for (uint8_t i = 0; i < depth; i++) {
+                std::cout << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
+            }
 
-    if (link.z >= min_z && link.z <= max_z) {
-        std::cout << "[zf: "<<link.z<<"\txf: "<<link.x<<"\tn: "<<nodes<<"\tc: "<<(int)link.cost<<"\td: "<<(int)depth<<"]\t";
-        for (uint8_t i = 0; i < depth; i++) {
-            std::cout << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
+            output_file << "[zi: " << link.z_i << " zf: "<<link.z<<"\txf: "<<link.x<<"\tn "<<nodes<<"\tc: "<<(int)link.cost<<"\td: "<<(int)depth<<"]\t";
+            for (uint8_t i = 0; i < depth; i++) {
+                output_file << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
+            }
+
+            if (link.cost < lowest_cost || lowest_cost == -1) {
+                lowest_cost = link.cost;
+            }
+
+            if (depth < lowest_depth || lowest_depth == -1) {
+                lowest_depth = depth;
+            }
+
+            std::cout << std::endl << std::endl;
+            output_file << std::endl << std::endl;
+
+            return;
         }
 
-        output_file << "[zf: "<<link.z<<"\txf: "<<link.x<<"\tn "<<nodes<<"\tc: "<<(int)link.cost<<"\td: "<<(int)depth<<"]\t";
-        for (uint8_t i = 0; i < depth; i++) {
-            output_file << " " << get_movename(link.moves[i]) << "(" << link.zs[i] << ")";
+        if (depth >= max_depth) {
+            return;
         }
-
-        if (link.cost < lowest_cost || lowest_cost == -1) {
-            lowest_cost = link.cost;
-        }
-
-        if (depth < lowest_depth || lowest_depth == -1) {
-            lowest_depth = depth;
-        }
-
-        std::cout << std::endl << std::endl;
-        output_file << std::endl << std::endl;
-
-        return;
-    }
-
-    if (depth >= max_depth) {
-        return;
     }
 
     for (uint8_t i = 0; i < sizeof(moves)/sizeof(Move); i++) {
@@ -119,30 +128,56 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        Link initial_link;
-
+        std::vector<Link> initial_links;
         std::cout << std::setprecision(7) << std::fixed;
 
         try {
             const char* pv;
-            pv = ini.GetValue("config", "link_pos", "0.0");
+            pv = ini.GetValue("config", "link_positions");
 
-            initial_link = {
-                0.0f, std::stof(pv), 0, 0.0f
-            };
+            if (pv) {
+                std::stringstream ss(pv);
+                std::string pos_str;
+
+                while (std::getline(ss, pos_str, ',')) {
+                    float z = std::stof(pos_str);
+
+                    initial_links.push_back({
+                        0.0f, z, 0, 0.0f
+                    });
+                }
+            }
 
             pv = ini.GetValue("config", "link_orientation", "1");
-            initial_link.orientation = std::stoi(pv);
+            int orientation = std::stoi(pv);
+            for (size_t i = 0; i < initial_links.size(); i++) initial_links[i].orientation = orientation;
+            
+            pv = ini.GetValue("config", "try_both_orientations", "false");
+            try_both_orientations = pv && strcmp(pv, "true") == 0;
+
+            pv = ini.GetValue("config", "goal_ranges");
+
+            if (pv) {
+                std::stringstream ss(pv);
+                std::string range_str;
+
+                while (std::getline(ss, range_str, ';')) {
+                    std::stringstream range_stream(range_str);
+
+                    std::string min_str, max_str;
+                    std::getline(range_stream, min_str, ':');
+                    std::getline(range_stream, max_str, ':');
+
+                    z_goal_ranges.push_back({
+                        std::stof(min_str),
+                        std::stof(max_str)
+                    });
+                }
+            }
 
             nodes = 0;
             lowest_cost = -1;
             lowest_depth = -1;
-
-            pv = ini.GetValue("config", "goal_min", "0.0");
-            min_z = std::stof(pv);
-
-            pv = ini.GetValue("config", "goal_max", "0.0");
-            max_z = std::stof(pv);
 
             pv = ini.GetValue("config", "collision_limit_min", "0.0");
             z_limit_min = std::stof(pv);
@@ -197,7 +232,16 @@ int main(int argc, char* argv[]) {
 
         std::cout << std::endl << "\nGenerating setups..." << std::endl << std::endl;
 
-        recurse(initial_link, 0);
+        for (size_t i = 0; i < initial_links.size(); i++) {
+            recurse(initial_links[i], 0);
+        }
+
+        if (try_both_orientations) {
+            for (size_t i = 0; i < initial_links.size(); i++) {
+                initial_links[i].orientation *= -1;
+                recurse(initial_links[i], 0);
+            }
+        }
 
         std::cout << std::endl << "Search complete! Made with <3 by Maddie" << std::endl << std::endl;
 
